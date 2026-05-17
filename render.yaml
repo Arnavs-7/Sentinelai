@@ -1,0 +1,15 @@
+# Render Blueprint for the SentinelAI API service.
+# The Streamlit dashboard is deployed separately on Streamlit Cloud and
+# uses the slim root-level requirements.txt.
+
+services:
+  - type: web
+    name: sentinelai-api
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements-api.txt
+    startCommand: python setup_models.py && uvicorn api.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: HF_MODEL_REPO
+        value: ArnavS782/sentinel-ai-models

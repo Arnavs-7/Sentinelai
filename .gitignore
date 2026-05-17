@@ -1,0 +1,47 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environment
+.env
+venv/
+.venv/
+env/
+
+# Streamlit secrets (keep only the .example template)
+.streamlit/secrets.toml
+
+# Models / artifacts
+*.pt
+*.pkl
+*.joblib
+*.onnx
+models_saved/
+exports/
+
+# Data
+data/raw/*
+data/processed/*
+
+# Databases
+*.db
+
+# Logs / reports
+logs/
+reports/
+
+# MLflow
+mlruns/
+
+# Packaging
+*.egg-info/
+build/
+dist/
+
+# IDE
+.idea/
+
+# Claude Code local settings
+.claude/settings.local.json
