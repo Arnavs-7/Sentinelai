@@ -1,23 +1,27 @@
-"""Shared light-theme global CSS and HTML helpers (Premium Light).
+"""Shared dark-theme global CSS and HTML helpers (Enterprise Dark).
 
-A high-impact light UI: indigo-violet accent, layered shadows, gradient
-text and smooth motion — built to feel like a modern SaaS product.
+A fully custom dark UI — near-black backgrounds, purple-tinted borders,
+indigo-violet accent, layered glows and gradient text — built to feel
+like a Palantir / Datadog / Grafana-grade monitoring platform.
 """
 
-# Palette — premium light SaaS aesthetic with indigo-violet accent.
-BG = "#F0EEF8"
-SURFACE = "#FFFFFF"
+# Palette — enterprise dark design system with indigo-violet accent.
+BG = "#0A0A0F"
+SURFACE = "#111118"
+ELEVATED = "#1A1A2E"
 PRIMARY = "#6366F1"
 PRIMARY_DARK = "#4F46E5"
 VIOLET = "#8B5CF6"
+CYAN = "#06B6D4"
 HEALTHY = "#10B981"
 WARNING = "#F59E0B"
 CRITICAL = "#EF4444"
-TEXT = "#111827"
-MUTED = "#6B7280"
-BORDER = "#E5E7EB"
-GRID = "#F3F4F6"
-TINT = "#F5F3FF"
+TEXT = "#F1F5F9"
+MUTED = "#94A3B8"
+DIM = "#475569"
+BORDER = "#2A2A4A"
+GRID = "#1E1E2E"
+GLOW = "rgba(99,102,241,0.15)"
 
 # Gradient end-colors so a card's accent can render as flowing gradient text.
 _GRADIENTS = {
@@ -36,18 +40,19 @@ html, body, [data-testid="stAppViewContainer"], [class*="css"] {
     font-family: 'Inter', -apple-system, sans-serif !important;
 }
 [data-testid="stAppViewContainer"] {
-    background-color: #F0EEF8;
+    background-color: #0A0A0F;
     background-image:
-        radial-gradient(ellipse at 10% 0%, rgba(99,102,241,0.08) 0%,
-            transparent 50%),
-        radial-gradient(ellipse at 90% 100%, rgba(139,92,246,0.06) 0%,
-            transparent 50%),
-        radial-gradient(circle, rgba(99,102,241,0.12) 1px, transparent 1px);
-    background-size: auto, auto, 28px 28px;
+        radial-gradient(ellipse at 12% 0%, rgba(99,102,241,0.10) 0%,
+            transparent 55%),
+        radial-gradient(ellipse at 88% 100%, rgba(139,92,246,0.08) 0%,
+            transparent 55%),
+        radial-gradient(circle, rgba(99,102,241,0.07) 1px, transparent 1px);
+    background-size: auto, auto, 30px 30px;
     background-attachment: fixed;
-    color: #111827;
+    color: #F1F5F9;
 }
-[data-testid="stHeader"] { background: transparent !important; }
+[data-testid="stHeader"] { background: #0A0A0F !important; }
+.stApp { background: #0A0A0F; }
 
 /* Smooth page entry animation. */
 @keyframes fadeSlideUp {
@@ -67,23 +72,15 @@ html, body, [data-testid="stAppViewContainer"], [class*="css"] {
 }
 
 /* ── Sidebar ── */
-/* Frosted-glass panel: a translucent white that lets the tinted page
-   show through softly, a faint indigo glow at the top behind the brand
-   wordmark, and a gentle vertical fade into the page background — so the
-   sidebar feels like part of the premium surface, not a flat white slab. */
+/* Deep near-black panel with a faint indigo glow behind the wordmark and
+   a purple-tinted right border, so it reads as a distinct dark surface. */
 [data-testid="stSidebar"] {
-    background-color: rgba(255,255,255,0.62) !important;
+    background-color: #0D0D1A !important;
     background-image:
-        radial-gradient(ellipse 120% 38% at 50% 0%,
-            rgba(99,102,241,0.14) 0%, transparent 70%),
-        linear-gradient(180deg,
-            rgba(255,255,255,0.92) 0%,
-            rgba(248,246,253,0.80) 52%,
-            rgba(238,236,250,0.74) 100%) !important;
-    backdrop-filter: blur(16px) !important;
-    -webkit-backdrop-filter: blur(16px) !important;
-    border-right: 1px solid rgba(99,102,241,0.15) !important;
-    box-shadow: 1px 0 28px rgba(99,102,241,0.07) !important;
+        radial-gradient(ellipse 120% 32% at 50% 0%,
+            rgba(99,102,241,0.18) 0%, transparent 72%) !important;
+    border-right: 1px solid #2A2A4A !important;
+    box-shadow: 1px 0 30px rgba(0,0,0,0.5) !important;
 }
 /* Streamlit's auto-generated page nav is hidden — a custom branded nav
    (see dashboard/components/sidebar.py) is rendered in its place. */
@@ -92,76 +89,78 @@ a[data-testid="stPageLink-NavLink"] {
     border-radius: 9px !important;
     padding: 0.5rem 0.75rem !important;
     transition: all 0.15s ease !important;
-    color: #6B7280 !important;
+    color: #94A3B8 !important;
     border-left: 3px solid transparent !important;
 }
 a[data-testid="stPageLink-NavLink"]:hover {
-    background: #F5F3FF !important;
-    color: #111827 !important;
+    background: #1A1A2E !important;
+    color: #F1F5F9 !important;
 }
-/* Active navigation item: indigo tint + left border indicator. */
+/* Active navigation item: indigo fill + left border indicator. */
 a[data-testid="stPageLink-NavLink"][aria-current="page"] {
-    background: #EEF2FF !important;
+    background: rgba(99,102,241,0.18) !important;
     border-left: 3px solid #6366F1 !important;
-    color: #4F46E5 !important;
+    color: #F1F5F9 !important;
     font-weight: 600 !important;
 }
 a[data-testid="stPageLink-NavLink"] p { color: inherit !important; }
 a[data-testid="stPageLink-NavLink"][aria-current="page"] p {
-    color: #4F46E5 !important;
+    color: #F1F5F9 !important;
     font-weight: 600 !important;
 }
 
 /* ── Typography ── */
 h1 {
-    color: #111827 !important;
+    color: #F1F5F9 !important;
     font-size: 2rem !important;
     font-weight: 800 !important;
     letter-spacing: -0.7px !important;
 }
 h2 {
-    color: #111827 !important;
+    color: #F1F5F9 !important;
     font-weight: 700 !important;
     letter-spacing: -0.3px !important;
 }
 h3 {
-    color: #111827 !important;
+    color: #F1F5F9 !important;
     font-weight: 700 !important;
     letter-spacing: -0.2px !important;
 }
-p, li { color: #6B7280 !important; }
+p, li { color: #94A3B8 !important; }
+strong, b { color: #F1F5F9 !important; }
 
 /* ── Metric cards ── */
-/* Frosted-glass surface: a translucent white over the tinted page
-   background gives cards depth without looking flat. */
 .metric-card, [data-testid="stMetric"] {
-    background: rgba(255,255,255,0.85) !important;
-    backdrop-filter: blur(8px) !important;
-    -webkit-backdrop-filter: blur(8px) !important;
+    background: #1A1A2E !important;
 }
 [data-testid="stMetric"], [data-testid="metric-container"] {
-    background: rgba(255,255,255,0.85) !important;
-    border: 1px solid #E5E7EB !important;
+    background: #1A1A2E !important;
+    border: 1px solid #2A2A4A !important;
     border-top: 4px solid #6366F1 !important;
-    border-radius: 16px !important;
+    border-radius: 12px !important;
     padding: 1.2rem 1.3rem !important;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06) !important;
-    transition: box-shadow 0.22s ease, transform 0.22s ease !important;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4) !important;
+    transition: box-shadow 0.22s ease, transform 0.22s ease,
+        border-color 0.22s ease !important;
 }
 [data-testid="stMetric"]:hover, [data-testid="metric-container"]:hover,
 .metric-card:hover {
-    box-shadow: 0 12px 40px rgba(99,102,241,0.15) !important;
+    border-color: #6366F1 !important;
+    box-shadow: 0 8px 36px rgba(99,102,241,0.28) !important;
     transform: translateY(-4px) !important;
 }
-.metric-card { transition: box-shadow 0.22s ease, transform 0.22s ease; }
+.metric-card {
+    transition: box-shadow 0.22s ease, transform 0.22s ease,
+        border-color 0.22s ease;
+}
 [data-testid="stMetricLabel"] {
-    color: #6B7280 !important;
+    color: #94A3B8 !important;
     font-size: 0.78rem !important;
     font-weight: 600 !important;
     text-transform: uppercase !important;
     letter-spacing: 0.6px !important;
 }
-[data-testid="stMetricLabel"] p { color: #6B7280 !important; }
+[data-testid="stMetricLabel"] p { color: #94A3B8 !important; }
 [data-testid="stMetricValue"] {
     font-weight: 800 !important;
     font-size: 2rem !important;
@@ -171,6 +170,7 @@ p, li { color: #6B7280 !important; }
     -webkit-text-fill-color: transparent !important;
     background-clip: text !important;
 }
+[data-testid="stMetricDelta"] { color: #94A3B8 !important; }
 
 /* ── Buttons ── */
 .stButton > button {
@@ -182,44 +182,44 @@ p, li { color: #6B7280 !important; }
     letter-spacing: 0.2px !important;
     transition: all 0.15s ease !important;
     padding: 0.55rem 1.5rem !important;
-    box-shadow: 0 2px 8px rgba(99,102,241,0.25) !important;
+    box-shadow: 0 2px 12px rgba(99,102,241,0.35) !important;
 }
 .stButton > button:hover {
-    filter: brightness(1.1) !important;
+    filter: brightness(1.12) !important;
     color: #FFFFFF !important;
-    box-shadow: 0 6px 18px rgba(99,102,241,0.35) !important;
+    box-shadow: 0 6px 22px rgba(99,102,241,0.5) !important;
     transform: translateY(-1px) !important;
 }
 .stButton > button:active { transform: translateY(0) !important; }
 .stDownloadButton > button {
-    background: #FFFFFF !important;
-    border: 1px solid #E5E7EB !important;
-    color: #4F46E5 !important;
+    background: #1A1A2E !important;
+    border: 1px solid #2A2A4A !important;
+    color: #A5B4FC !important;
     border-radius: 10px !important;
     font-weight: 600 !important;
 }
 .stDownloadButton > button:hover {
     border-color: #6366F1 !important;
-    background: #F5F3FF !important;
-    color: #4F46E5 !important;
+    background: #1F1F3A !important;
+    color: #C7D2FE !important;
 }
 
 /* ── Tabs ── */
 .stTabs [data-baseweb="tab-list"] {
     background: transparent !important;
-    border-bottom: 1px solid #E5E7EB !important;
+    border-bottom: 1px solid #2A2A4A !important;
     gap: 0.4rem !important;
 }
 .stTabs [data-baseweb="tab"] {
     background: transparent !important;
-    color: #6B7280 !important;
+    color: #94A3B8 !important;
     border-radius: 8px 8px 0 0 !important;
     padding: 0.6rem 1.1rem !important;
     font-weight: 600 !important;
 }
 .stTabs [aria-selected="true"] {
-    background: #F5F3FF !important;
-    color: #4F46E5 !important;
+    background: rgba(99,102,241,0.12) !important;
+    color: #C7D2FE !important;
     border-bottom: 2px solid #6366F1 !important;
 }
 
@@ -230,9 +230,9 @@ p, li { color: #6B7280 !important; }
 [data-testid="stDateInput"] input,
 [data-baseweb="select"] > div,
 textarea {
-    background: #FFFFFF !important;
-    border: 1px solid #E5E7EB !important;
-    color: #111827 !important;
+    background: #111118 !important;
+    border: 1px solid #2A2A4A !important;
+    color: #F1F5F9 !important;
     border-radius: 10px !important;
 }
 [data-testid="stTextInput"] input:focus,
@@ -241,91 +241,106 @@ textarea:focus {
     border-color: #6366F1 !important;
     box-shadow: 0 0 0 4px rgba(99,102,241,0.2) !important;
 }
+[data-baseweb="popover"] [role="listbox"] {
+    background: #1A1A2E !important;
+    border: 1px solid #2A2A4A !important;
+}
+[data-baseweb="popover"] [role="option"]:hover {
+    background: rgba(99,102,241,0.15) !important;
+}
 
 /* ── File uploader ── */
 [data-testid="stFileUploader"] {
-    background: #FFFFFF !important;
-    border: 2px dashed #C7C9F2 !important;
+    background: #111118 !important;
+    border: 2px dashed #2A2A4A !important;
     border-radius: 14px !important;
     padding: 1.5rem !important;
     transition: all 0.2s ease !important;
 }
 [data-testid="stFileUploader"]:hover {
     border-color: #6366F1 !important;
-    background: #F5F3FF !important;
+    background: #15152A !important;
 }
 
 /* ── Alert boxes ── */
 [data-testid="stInfo"] {
-    background: #EEF2FF !important;
-    border: 1px solid #DDD6FE !important;
+    background: rgba(99,102,241,0.12) !important;
+    border: 1px solid rgba(99,102,241,0.3) !important;
     border-left: 4px solid #6366F1 !important;
     border-radius: 0 10px 10px 0 !important;
-    color: #3730A3 !important;
+    color: #C7D2FE !important;
 }
 [data-testid="stSuccess"] {
-    background: #ECFDF5 !important;
-    border: 1px solid #A7F3D0 !important;
+    background: rgba(16,185,129,0.12) !important;
+    border: 1px solid rgba(16,185,129,0.3) !important;
     border-left: 4px solid #10B981 !important;
     border-radius: 0 10px 10px 0 !important;
-    color: #065F46 !important;
+    color: #6EE7B7 !important;
 }
 [data-testid="stWarning"] {
-    background: #FFFBEB !important;
-    border: 1px solid #FDE68A !important;
+    background: rgba(245,158,11,0.12) !important;
+    border: 1px solid rgba(245,158,11,0.3) !important;
     border-left: 4px solid #F59E0B !important;
     border-radius: 0 10px 10px 0 !important;
-    color: #92400E !important;
+    color: #FCD34D !important;
 }
 [data-testid="stError"] {
-    background: #FEF2F2 !important;
-    border: 1px solid #FECACA !important;
+    background: rgba(239,68,68,0.12) !important;
+    border: 1px solid rgba(239,68,68,0.3) !important;
     border-left: 4px solid #EF4444 !important;
     border-radius: 0 10px 10px 0 !important;
-    color: #991B1B !important;
+    color: #FCA5A5 !important;
+}
+[data-testid="stInfo"] p, [data-testid="stSuccess"] p,
+[data-testid="stWarning"] p, [data-testid="stError"] p {
+    color: inherit !important;
 }
 
 /* ── Dataframe / tables ── */
 [data-testid="stDataFrame"], [data-testid="stTable"] {
-    border: 1px solid #E5E7EB !important;
+    border: 1px solid #2A2A4A !important;
     border-radius: 12px !important;
     overflow: hidden !important;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4) !important;
 }
-[data-testid="stTable"] table { background: #FFFFFF !important; }
+[data-testid="stTable"] table { background: #111118 !important; }
 [data-testid="stTable"] thead th {
-    background: rgba(99,102,241,0.06) !important;
-    color: #111827 !important;
+    background: #0D0D1A !important;
+    color: #94A3B8 !important;
     font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
 }
-[data-testid="stTable"] tbody tr:nth-child(even) { background: #FAFAFA !important; }
-[data-testid="stTable"] tbody tr:nth-child(odd) { background: #FFFFFF !important; }
-[data-testid="stTable"] td { color: #111827 !important; }
+[data-testid="stTable"] tbody tr:nth-child(even) { background: #15152A !important; }
+[data-testid="stTable"] tbody tr:nth-child(odd) { background: #111118 !important; }
+[data-testid="stTable"] tbody tr:hover { background: #1A1A2E !important; }
+[data-testid="stTable"] td { color: #F1F5F9 !important; }
 
 /* ── Plotly charts ── */
 .js-plotly-plot {
-    border: 1px solid #E5E7EB !important;
+    border: 1px solid #2A2A4A !important;
     border-radius: 16px !important;
     overflow: hidden !important;
-    background: #FFFFFF !important;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06) !important;
+    background: #111118 !important;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4) !important;
 }
 
 /* ── Expander ── */
 [data-testid="stExpander"] {
-    border: 1px solid #E5E7EB !important;
+    border: 1px solid #2A2A4A !important;
     border-radius: 12px !important;
-    background: #FFFFFF !important;
+    background: #111118 !important;
 }
+[data-testid="stExpander"] summary { color: #F1F5F9 !important; }
 
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 9px; height: 9px; }
-::-webkit-scrollbar-track { background: #F3F4F6; }
-::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 5px; }
+::-webkit-scrollbar-track { background: #0D0D1A; }
+::-webkit-scrollbar-thumb { background: #2A2A4A; border-radius: 5px; }
 ::-webkit-scrollbar-thumb:hover { background: #6366F1; }
 
 /* ── Text selection ── */
-::selection { background: #EDE9FE; color: #111827; }
+::selection { background: rgba(99,102,241,0.35); color: #F1F5F9; }
 
 /* ── Status badges ── */
 .badge {
@@ -338,24 +353,28 @@ textarea:focus {
     font-weight: 700;
     letter-spacing: 0.4px;
     text-transform: uppercase;
+    border: 1px solid transparent;
 }
 .badge .dot { font-size: 0.6rem; line-height: 1; }
 .badge-healthy {
-    background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
-    color: #065F46;
+    background: rgba(16,185,129,0.13);
+    color: #10B981;
+    border-color: rgba(16,185,129,0.4);
 }
 .badge-warning {
-    background: linear-gradient(135deg, #FEF3C7, #FDE68A);
-    color: #92400E;
+    background: rgba(245,158,11,0.13);
+    color: #F59E0B;
+    border-color: rgba(245,158,11,0.4);
 }
 .badge-critical {
-    background: linear-gradient(135deg, #FEE2E2, #FECACA);
-    color: #991B1B;
+    background: rgba(239,68,68,0.13);
+    color: #EF4444;
+    border-color: rgba(239,68,68,0.4);
 }
 .badge-critical .dot { animation: pulseDot 1.4s ease-in-out infinite; }
 
 /* ── Divider ── */
-hr { border-color: #E5E7EB !important; margin: 1.4rem 0 !important; }
+hr { border-color: #2A2A4A !important; margin: 1.4rem 0 !important; }
 
 /* ── Main content padding ── */
 .main .block-container {
@@ -364,7 +383,8 @@ hr { border-color: #E5E7EB !important; margin: 1.4rem 0 !important; }
 }
 
 /* ── Captions ── */
-[data-testid="stCaptionContainer"], .stCaption { color: #9CA3AF !important; }
+[data-testid="stCaptionContainer"], .stCaption { color: #475569 !important; }
+[data-testid="stCaptionContainer"] p { color: #475569 !important; }
 </style>
 """
 
@@ -410,14 +430,15 @@ def metric_card(
     """
     end = _GRADIENTS.get(color, color)
     return f"""
-<div class="metric-card" style="background:#FFFFFF;
-    border:1px solid #E5E7EB; border-top:4px solid {color};
-    border-radius:16px; padding:1.3rem 1.4rem;
-    box-shadow:0 1px 3px rgba(0,0,0,0.06),0 4px 16px rgba(0,0,0,0.06);">
+<div class="metric-card" style="background:#1A1A2E;
+    border:1px solid #2A2A4A; border-top:4px solid {color};
+    border-radius:12px; padding:1.3rem 1.4rem;
+    box-shadow:0 4px 24px rgba(0,0,0,0.4);">
     <div style="display:flex;align-items:center;gap:7px;margin-bottom:0.5rem;">
         <span style="width:8px;height:8px;border-radius:50%;
-            background:{color};display:inline-block;"></span>
-        <span style="color:#6B7280;font-size:0.75rem;font-weight:600;
+            background:{color};display:inline-block;
+            box-shadow:0 0 8px {color};"></span>
+        <span style="color:#94A3B8;font-size:0.75rem;font-weight:600;
             text-transform:uppercase;letter-spacing:0.6px;">{title}</span>
     </div>
     <div style="font-size:2.1rem;font-weight:800;line-height:1;
@@ -427,7 +448,7 @@ def metric_card(
         background-clip:text;">
         {value}
     </div>
-    <div style="color:#9CA3AF;font-size:0.8rem;margin-top:0.45rem;">{subtitle}</div>
+    <div style="color:#475569;font-size:0.8rem;margin-top:0.45rem;">{subtitle}</div>
 </div>"""
 
 
@@ -447,14 +468,14 @@ def empty_state(
         An HTML string for ``st.markdown(..., unsafe_allow_html=True)``.
     """
     return f"""
-<div style="background:#FFFFFF;border:1px solid #E5E7EB;border-radius:16px;
+<div style="background:#1A1A2E;border:1px solid #2A2A4A;border-radius:16px;
     padding:3rem;text-align:center;margin:2rem 0;
-    box-shadow:0 1px 3px rgba(0,0,0,0.06),0 4px 16px rgba(0,0,0,0.06);">
+    box-shadow:0 4px 24px rgba(0,0,0,0.4);">
     <div style="font-size:3rem;margin-bottom:1rem;">{icon}</div>
-    <div style="color:#111827;font-size:1.1rem;font-weight:700;margin-bottom:0.5rem;">
+    <div style="color:#F1F5F9;font-size:1.1rem;font-weight:700;margin-bottom:0.5rem;">
         {message}
     </div>
-    <div style="color:#9CA3AF;font-size:0.85rem;">{sub}</div>
+    <div style="color:#475569;font-size:0.85rem;">{sub}</div>
 </div>"""
 
 
@@ -469,7 +490,7 @@ def page_header(title: str, subtitle: str = "") -> str:
         An HTML string for ``st.markdown(..., unsafe_allow_html=True)``.
     """
     sub = (
-        "<p style='color:#6B7280;margin:0.35rem 0 0;font-size:0.95rem;'>"
+        "<p style='color:#94A3B8;margin:0.35rem 0 0;font-size:0.95rem;'>"
         + subtitle
         + "</p>"
         if subtitle
@@ -479,12 +500,13 @@ def page_header(title: str, subtitle: str = "") -> str:
 <div style="margin-bottom:1.7rem;">
     <h1 style="font-size:2.1rem;font-weight:800;letter-spacing:-0.7px;
         margin:0;border:none;padding:0;
-        background:linear-gradient(135deg,#6366F1 0%,#8B5CF6 100%);
+        background:linear-gradient(135deg,#818CF8 0%,#A78BFA 100%);
         -webkit-background-clip:text;-webkit-text-fill-color:transparent;
         background-clip:text;display:inline-block;">
         {title}
     </h1>
     {sub}
     <div style="height:3px;width:48px;border-radius:99px;margin-top:0.85rem;
-        background:linear-gradient(135deg,#6366F1 0%,#8B5CF6 100%);"></div>
+        background:linear-gradient(135deg,#6366F1 0%,#8B5CF6 100%);
+        box-shadow:0 0 12px rgba(99,102,241,0.5);"></div>
 </div>"""

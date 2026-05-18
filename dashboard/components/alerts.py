@@ -73,13 +73,13 @@ def alerts_timeline(alerts: List[Dict[str, Any]]) -> None:
     )
     fig.update_traces(marker={"size": 13, "symbol": "diamond"})
     fig.update_layout(
-        template="plotly_white",
-        paper_bgcolor="#FFFFFF",
-        plot_bgcolor="#FFFFFF",
-        font={"family": "Inter, sans-serif", "color": "#6B7280"},
-        title={"text": "Alert Timeline", "font": {"color": "#111827"}},
-        xaxis={"title": "Time", "gridcolor": "#F3F4F6", "linecolor": "#E5E7EB"},
-        yaxis={"title": "Severity", "gridcolor": "#F3F4F6", "linecolor": "#E5E7EB"},
+        template="plotly_dark",
+        paper_bgcolor="#0A0A0F",
+        plot_bgcolor="#111118",
+        font={"family": "Inter, sans-serif", "color": "#94A3B8"},
+        title={"text": "Alert Timeline", "font": {"color": "#F1F5F9"}},
+        xaxis={"title": "Time", "gridcolor": "#1E1E2E", "linecolor": "#2A2A4A"},
+        yaxis={"title": "Severity", "gridcolor": "#1E1E2E", "linecolor": "#2A2A4A"},
         margin={"l": 40, "r": 20, "t": 50, "b": 40},
     )
     st.plotly_chart(fig, use_container_width=True)

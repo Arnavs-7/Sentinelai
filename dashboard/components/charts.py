@@ -1,4 +1,4 @@
-"""Plotly chart builders for the SentinelAI dashboard (light theme)."""
+"""Plotly chart builders for the SentinelAI dashboard (dark theme)."""
 
 from typing import Any, Dict, List, Optional
 
@@ -7,11 +7,12 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
-_TEMPLATE = "plotly_white"
-_PAPER_BG = "#FFFFFF"
-_PLOT_BG = "#FFFFFF"
-_GRID = "#F3F4F6"
-_AXIS = "#6B7280"
+_TEMPLATE = "plotly_dark"
+_PAPER_BG = "#0A0A0F"
+_PLOT_BG = "#111118"
+_GRID = "#1E1E2E"
+_AXIS = "#94A3B8"
+_BORDER = "#2A2A4A"
 _PRIMARY = "#6366F1"
 _VIOLET = "#8B5CF6"
 # Continuous indigo→violet scale for gradient-filled bars/histograms.
@@ -25,7 +26,7 @@ _RISK_COLORS = {
 
 
 def _style(fig: go.Figure) -> go.Figure:
-    """Apply the shared light-theme styling to a figure.
+    """Apply the shared dark-theme styling to a figure.
 
     Args:
         fig: The figure to style in place.
@@ -38,15 +39,15 @@ def _style(fig: go.Figure) -> go.Figure:
         paper_bgcolor=_PAPER_BG,
         plot_bgcolor=_PLOT_BG,
         font={"family": "Inter, sans-serif", "color": _AXIS},
-        xaxis={"gridcolor": _GRID, "linecolor": "#E5E7EB", "zerolinecolor": _GRID},
-        yaxis={"gridcolor": _GRID, "linecolor": "#E5E7EB", "zerolinecolor": _GRID},
+        xaxis={"gridcolor": _GRID, "linecolor": _BORDER, "zerolinecolor": _GRID},
+        yaxis={"gridcolor": _GRID, "linecolor": _BORDER, "zerolinecolor": _GRID},
         legend={"font": {"color": _AXIS}},
         margin={"l": 20, "r": 20, "t": 44, "b": 20},
     )
     # Style the title only when the figure actually carries title text, so
     # charts without a title are not given a stray "undefined" label.
     if fig.layout.title and fig.layout.title.text:
-        fig.update_layout(title={"font": {"color": "#111827", "size": 15}})
+        fig.update_layout(title={"font": {"color": "#F1F5F9", "size": 15}})
     return fig
 
 
@@ -71,18 +72,19 @@ def rul_gauge(rul: float, machine_name: str) -> go.Figure:
             mode="gauge+number",
             value=max(0.0, min(150.0, rul)),
             title={"text": f"RUL — {machine_name}"},
-            number={"suffix": " cycles", "font": {"color": "#111827"}},
+            number={"suffix": " cycles", "font": {"color": "#F1F5F9"}},
             gauge={
                 "axis": {"range": [0, 150], "tickcolor": _AXIS},
                 "bar": {"color": bar_color},
+                "bgcolor": "#111118",
                 "steps": [
-                    {"range": [0, 30], "color": "#FEE2E2"},
-                    {"range": [30, 100], "color": "#FEF3C7"},
-                    {"range": [100, 150], "color": "#D1FAE5"},
+                    {"range": [0, 30], "color": "rgba(239,68,68,0.22)"},
+                    {"range": [30, 100], "color": "rgba(245,158,11,0.22)"},
+                    {"range": [100, 150], "color": "rgba(16,185,129,0.22)"},
                 ],
-                "bordercolor": "#E5E7EB",
+                "bordercolor": _BORDER,
                 "threshold": {
-                    "line": {"color": "#111827", "width": 3},
+                    "line": {"color": "#F1F5F9", "width": 3},
                     "value": rul,
                 },
             },
@@ -270,7 +272,7 @@ def prediction_confidence_band(history: List[Dict[str, Any]]) -> go.Figure:
             x=times + times[::-1],
             y=upper + lower[::-1],
             fill="toself",
-            fillcolor="rgba(99, 102, 241, 0.08)",
+            fillcolor="rgba(99, 102, 241, 0.20)",
             line={"color": "rgba(0,0,0,0)"},
             name="Confidence",
             hoverinfo="skip",

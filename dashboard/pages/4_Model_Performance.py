@@ -64,31 +64,31 @@ def _model_card(model: Dict[str, Any]) -> str:
         An HTML string for ``st.markdown(..., unsafe_allow_html=True)``.
     """
     serving = bool(model["serving"])
-    border = "#6366F1" if serving else "#E5E7EB"
+    border = "#6366F1" if serving else "#2A2A4A"
     glow = (
-        "0 8px 28px rgba(99,102,241,0.22)"
+        "0 8px 32px rgba(99,102,241,0.32)"
         if serving
-        else "0 1px 3px rgba(0,0,0,0.06),0 4px 16px rgba(0,0,0,0.06)"
+        else "0 4px 24px rgba(0,0,0,0.4)"
     )
     if serving:
         badge = (
             '<span style="background:linear-gradient(135deg,#6366F1,#8B5CF6);'
             "color:#FFFFFF;border-radius:999px;padding:4px 13px;"
             "font-size:0.7rem;font-weight:700;letter-spacing:0.5px;"
-            'box-shadow:0 2px 8px rgba(99,102,241,0.35);">● LIVE</span>'
+            'box-shadow:0 2px 12px rgba(99,102,241,0.5);">● LIVE</span>'
         )
     else:
         badge = (
-            '<span style="background:#F3F4F6;color:#6B7280;'
-            "border:1px solid #E5E7EB;border-radius:999px;padding:4px 13px;"
+            '<span style="background:rgba(71,85,105,0.18);color:#94A3B8;'
+            "border:1px solid #2A2A4A;border-radius:999px;padding:4px 13px;"
             'font-size:0.7rem;font-weight:600;letter-spacing:0.5px;">BENCHMARK</span>'
         )
     name_style = (
-        "background:linear-gradient(135deg,#6366F1,#8B5CF6);"
+        "background:linear-gradient(135deg,#818CF8,#A78BFA);"
         "-webkit-background-clip:text;-webkit-text-fill-color:transparent;"
         "background-clip:text;"
         if serving
-        else "color:#111827;"
+        else "color:#F1F5F9;"
     )
     metrics = [
         ("RMSE", f"{model['rmse']:.4g}"),
@@ -97,16 +97,16 @@ def _model_card(model: Dict[str, Any]) -> str:
         ("Acc@10", f"{model['acc_10']:.1f}%"),
     ]
     minis = "".join(
-        f'<div style="background:#FAFAFA;border:1px solid #E5E7EB;'
+        f'<div style="background:#111118;border:1px solid #2A2A4A;'
         f"border-radius:10px;padding:0.6rem 0.4rem;text-align:center;\">"
-        f'<div style="color:#6B7280;font-size:0.65rem;text-transform:uppercase;'
+        f'<div style="color:#94A3B8;font-size:0.65rem;text-transform:uppercase;'
         f'letter-spacing:0.5px;font-weight:600;">{label}</div>'
-        f'<div style="color:#111827;font-size:1.05rem;font-weight:800;'
+        f'<div style="color:#F1F5F9;font-size:1.05rem;font-weight:800;'
         f'margin-top:2px;font-variant-numeric:tabular-nums;">{value}</div></div>'
         for label, value in metrics
     )
     return f"""
-<div class="metric-card" style="background:#FFFFFF;
+<div class="metric-card" style="background:#1A1A2E;
     border:1px solid {border};border-radius:16px;padding:1.5rem;
     box-shadow:{glow};margin-bottom:1rem;">
     <div style="display:flex;justify-content:space-between;align-items:center;

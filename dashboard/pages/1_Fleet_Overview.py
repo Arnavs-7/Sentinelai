@@ -15,10 +15,12 @@ from dashboard.components.charts import rul_distribution
 from dashboard.components.sidebar import render_sidebar
 from dashboard.utils.api_client import SentinelAPIClient
 
+# Translucent dark row tints, paired with a light text color so rows stay
+# legible on the dark dataframe surface.
 _RISK_ROW_COLORS = {
-    "CRITICAL": "#FEE2E2",
-    "WARNING": "#FEF3C7",
-    "HEALTHY": "#D1FAE5",
+    "CRITICAL": "rgba(239,68,68,0.16)",
+    "WARNING": "rgba(245,158,11,0.16)",
+    "HEALTHY": "rgba(16,185,129,0.14)",
 }
 
 
@@ -38,8 +40,10 @@ def _row_style(machines: List[Dict[str, Any]]) -> Any:
 
     def _apply(row: Any) -> List[str]:
         color = _RISK_ROW_COLORS.get(levels[row.name], "")
-        background = f"background-color:{color}" if color else ""
-        return [background] * len(row)
+        style = (
+            f"background-color:{color};color:#F1F5F9" if color else ""
+        )
+        return [style] * len(row)
 
     return _apply
 

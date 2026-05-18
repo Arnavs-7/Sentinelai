@@ -1,4 +1,4 @@
-"""Reusable Streamlit card and badge components (light theme)."""
+"""Reusable Streamlit card and badge components (dark theme)."""
 
 from typing import Any, Dict
 
@@ -16,12 +16,12 @@ _RISK_GRADIENTS = {
     "#F59E0B": "#FBBF24",
     "#EF4444": "#F87171",
 }
-# Gradient status pills: (gradient-start, gradient-end, text-color).
+# Dark status pills: (translucent-bg, border-color, text-color).
 _RISK_TINTS = {
-    "HEALTHY": ("#D1FAE5", "#A7F3D0", "#065F46"),
-    "WARNING": ("#FEF3C7", "#FDE68A", "#92400E"),
-    "CRITICAL": ("#FEE2E2", "#FECACA", "#991B1B"),
-    "FAILED": ("#FEE2E2", "#FECACA", "#991B1B"),
+    "HEALTHY": ("rgba(16,185,129,0.13)", "rgba(16,185,129,0.4)", "#10B981"),
+    "WARNING": ("rgba(245,158,11,0.13)", "rgba(245,158,11,0.4)", "#F59E0B"),
+    "CRITICAL": ("rgba(239,68,68,0.13)", "rgba(239,68,68,0.4)", "#EF4444"),
+    "FAILED": ("rgba(239,68,68,0.13)", "rgba(239,68,68,0.4)", "#EF4444"),
 }
 _SEVERITY_COLORS = {
     "critical": "#EF4444",
@@ -34,13 +34,13 @@ _SEVERITY_COLORS = {
 def kpi_card(
     title: str, value: str, delta: str, color: str, pulse: bool = False
 ) -> None:
-    """Render a KPI card with a colored left border.
+    """Render a KPI card with a colored top border.
 
     Args:
         title: The metric label.
         value: The primary metric value.
         delta: A secondary delta or context string.
-        color: CSS color for the left border and value text.
+        color: CSS color for the top border and value text.
         pulse: When ``True``, the card pulses to flag a critical state.
     """
     animation = "animation:pulse 1.6s infinite;" if pulse else ""
@@ -48,18 +48,19 @@ def kpi_card(
     st.markdown(
         f"""
         <div class="metric-card" style="
-            background:#FFFFFF;
-            border:1px solid #E5E7EB;
+            background:#1A1A2E;
+            border:1px solid #2A2A4A;
             border-top:4px solid {color};
-            border-radius:16px;
+            border-radius:12px;
             padding:1.3rem 1.4rem;
             margin-bottom:8px;
-            box-shadow:0 1px 3px rgba(0,0,0,0.06),0 4px 16px rgba(0,0,0,0.06);
+            box-shadow:0 4px 24px rgba(0,0,0,0.4);
             {animation}">
             <div style="display:flex;align-items:center;gap:7px;">
                 <span style="width:8px;height:8px;border-radius:50%;
-                    background:{color};display:inline-block;"></span>
-                <span style="color:#6B7280;font-size:0.75rem;font-weight:600;
+                    background:{color};display:inline-block;
+                    box-shadow:0 0 8px {color};"></span>
+                <span style="color:#94A3B8;font-size:0.75rem;font-weight:600;
                     text-transform:uppercase;letter-spacing:0.6px;">{title}</span>
             </div>
             <div style="font-size:2.1rem;font-weight:800;margin-top:5px;
@@ -67,7 +68,7 @@ def kpi_card(
                 background:linear-gradient(135deg,{color} 0%,{end} 100%);
                 -webkit-background-clip:text;-webkit-text-fill-color:transparent;
                 background-clip:text;">{value}</div>
-            <div style="color:#9CA3AF;font-size:0.78rem;">{delta}</div>
+            <div style="color:#475569;font-size:0.78rem;">{delta}</div>
         </div>
         <style>@keyframes pulse {{0%,100%{{opacity:1;}}50%{{opacity:0.6;}}}}</style>
         """,
@@ -85,11 +86,11 @@ def risk_badge(risk_level: str) -> str:
         An HTML ``span`` string suitable for ``st.markdown``.
     """
     level = (risk_level or "UNKNOWN").upper()
-    start, end, fg = _RISK_TINTS.get(
-        level, ("#F3F4F6", "#E5E7EB", "#6B7280")
+    bg, border, fg = _RISK_TINTS.get(
+        level, ("rgba(71,85,105,0.18)", "#2A2A4A", "#94A3B8")
     )
     return (
-        f'<span style="background:linear-gradient(135deg,{start},{end});'
+        f'<span style="background:{bg};border:1px solid {border};'
         f"color:{fg};display:inline-flex;align-items:center;gap:5px;"
         f"padding:4px 13px;border-radius:999px;font-size:0.74rem;"
         f'font-weight:700;letter-spacing:0.4px;">'
@@ -111,24 +112,24 @@ def machine_status_card(machine: Dict[str, Any]) -> None:
     st.markdown(
         f"""
         <div class="metric-card" style="
-            background:#FFFFFF;
-            border:1px solid #E5E7EB;
-            border-radius:16px;
+            background:#1A1A2E;
+            border:1px solid #2A2A4A;
+            border-radius:12px;
             padding:15px 18px;
             margin-bottom:10px;
-            box-shadow:0 1px 3px rgba(0,0,0,0.06),0 4px 16px rgba(0,0,0,0.06);">
+            box-shadow:0 4px 24px rgba(0,0,0,0.4);">
             <div style="display:flex;justify-content:space-between;
                 align-items:center;">
-                <span style="color:#111827;font-size:1.05rem;font-weight:700;">
+                <span style="color:#F1F5F9;font-size:1.05rem;font-weight:700;">
                     {machine.get('name', '?')}</span>
                 {risk_badge(risk)}
             </div>
-            <div style="color:#6B7280;font-size:0.82rem;margin-top:4px;">
+            <div style="color:#94A3B8;font-size:0.82rem;margin-top:4px;">
                 {machine.get('type', 'Unknown')} ·
                 {machine.get('location', 'Unknown')}</div>
-            <div style="color:#111827;font-size:0.9rem;margin-top:6px;">
-                RUL: <b style="color:#4F46E5;">{rul_text}</b></div>
-            <div style="color:#9CA3AF;font-size:0.72rem;margin-top:4px;">
+            <div style="color:#F1F5F9;font-size:0.9rem;margin-top:6px;">
+                RUL: <b style="color:#A5B4FC;">{rul_text}</b></div>
+            <div style="color:#475569;font-size:0.72rem;margin-top:4px;">
                 Updated: {updated}</div>
         </div>
         """,
@@ -147,20 +148,20 @@ def alert_card(alert: Dict[str, Any]) -> None:
     st.markdown(
         f"""
         <div style="
-            background:#FFFFFF;
-            border:1px solid #E5E7EB;
+            background:#1A1A2E;
+            border:1px solid #2A2A4A;
             border-left:4px solid {color};
             border-radius:0 14px 14px 0;
             padding:13px 17px;
             margin-bottom:8px;
-            box-shadow:0 1px 3px rgba(0,0,0,0.06),0 4px 16px rgba(0,0,0,0.06);">
+            box-shadow:0 4px 24px rgba(0,0,0,0.4);">
             <div style="display:flex;justify-content:space-between;">
                 <span style="color:{color};font-size:0.8rem;font-weight:700;">
                     {severity.upper()} · {alert.get('alert_type', 'alert')}</span>
-                <span style="color:#9CA3AF;font-size:0.7rem;">
+                <span style="color:#475569;font-size:0.7rem;">
                     {alert.get('timestamp', '')}</span>
             </div>
-            <div style="color:#111827;font-size:0.9rem;margin-top:4px;">
+            <div style="color:#F1F5F9;font-size:0.9rem;margin-top:4px;">
                 {alert.get('message', '')}</div>
         </div>
         """,

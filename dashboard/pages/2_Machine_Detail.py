@@ -24,7 +24,7 @@ from dashboard.utils.api_client import SentinelAPIClient
 
 
 def _attention_heatmap(matrix: List[List[float]]) -> go.Figure:
-    """Build a light-themed attention heatmap.
+    """Build a dark-themed attention heatmap.
 
     Args:
         matrix: A 2D attention-weight matrix.
@@ -35,15 +35,15 @@ def _attention_heatmap(matrix: List[List[float]]) -> go.Figure:
     fig = go.Figure(
         go.Heatmap(
             z=matrix,
-            colorscale=[[0.0, "#EEF2FF"], [0.5, "#A5B4FC"], [1.0, "#6366F1"]],
+            colorscale=[[0.0, "#111118"], [0.5, "#6366F1"], [1.0, "#8B5CF6"]],
         )
     )
     fig.update_layout(
-        template="plotly_white",
-        paper_bgcolor="#FFFFFF",
-        plot_bgcolor="#FFFFFF",
-        font={"family": "Inter, sans-serif", "color": "#6B7280"},
-        title={"text": "Attention Heatmap", "font": {"color": "#111827"}},
+        template="plotly_dark",
+        paper_bgcolor="#0A0A0F",
+        plot_bgcolor="#111118",
+        font={"family": "Inter, sans-serif", "color": "#94A3B8"},
+        title={"text": "Attention Heatmap", "font": {"color": "#F1F5F9"}},
         margin={"l": 20, "r": 20, "t": 40, "b": 20},
     )
     return fig
