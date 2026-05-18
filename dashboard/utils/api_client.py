@@ -32,6 +32,12 @@ class SentinelAPIClient:
         self.base_url = resolved.rstrip("/")
         self._session = requests.Session()
 
+        # Forward the API key when one is configured; the API only
+        # enforces it when SENTINEL_API_KEY is set on the server too.
+        api_key = os.getenv("SENTINEL_API_KEY", "").strip()
+        if api_key:
+            self._session.headers["X-API-Key"] = api_key
+
     def _request(
         self,
         method: str,

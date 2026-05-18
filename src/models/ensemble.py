@@ -9,7 +9,6 @@ import torch
 from scipy.optimize import minimize
 from sklearn.linear_model import Ridge
 from sklearn.model_selection import KFold
-from torch import Tensor
 
 from src.utils.config import ModelConfig
 from src.utils.logger import get_logger

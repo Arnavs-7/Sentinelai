@@ -133,7 +133,8 @@ def calibration_error(
         return 0.0
     covered = (yt >= lo) & (yt <= up)
     empirical_coverage = float(np.mean(covered))
-    nominal_coverage = float(np.mean((_as_array(y_pred) >= lo) & (_as_array(y_pred) <= up)))
+    predicted = _as_array(y_pred)
+    nominal_coverage = float(np.mean((predicted >= lo) & (predicted <= up)))
     return float(abs(empirical_coverage - nominal_coverage))
 
 

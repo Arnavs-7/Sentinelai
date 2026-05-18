@@ -2,6 +2,7 @@
 
 import time
 import traceback
+import uuid
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
@@ -78,10 +79,14 @@ async def rate_limit_middleware(
 
 
 @app.middleware("http")
-async def logging_middleware(
+async def request_context_middleware(
     request: Request, call_next: Callable
 ) -> Any:
-    """Log the method, path, status and response time of each request.
+    """Assign a request_id, then log the request at INFO level.
+
+    A UUID4 ``request_id`` is attached to ``request.state`` so handlers
+    and the exception handler can reference it, and echoed back in the
+    ``X-Request-ID`` response header for client-side correlation.
 
     Args:
         request: The incoming request.
@@ -90,16 +95,21 @@ async def logging_middleware(
     Returns:
         The downstream response.
     """
+    request_id = str(uuid.uuid4())
+    request.state.request_id = request_id
+
     start = time.perf_counter()
     response = await call_next(request)
     elapsed_ms = (time.perf_counter() - start) * 1000.0
     logger.info(
-        "%s %s -> %d %.1fms",
+        "req=%s %s %s -> %d %.1fms",
+        request_id,
         request.method,
         request.url.path,
         response.status_code,
         elapsed_ms,
     )
+    response.headers["X-Request-ID"] = request_id
     response.headers["X-Response-Time-Ms"] = f"{elapsed_ms:.1f}"
     return response
 
@@ -119,8 +129,10 @@ async def global_exception_handler(
     """
     status_code = getattr(exc, "status_code", 500)
     detail = getattr(exc, "detail", str(exc)) or "Internal server error."
+    request_id = getattr(request.state, "request_id", "unknown")
     logger.error(
-        "Unhandled error on %s %s: %s",
+        "req=%s unhandled error on %s %s: %s",
+        request_id,
         request.method,
         request.url.path,
         exc,

@@ -1,6 +1,6 @@
 """Training loop with mixed precision, scheduling and MLflow tracking."""
 
-from typing import Any, Dict, List
+from typing import Dict, List
 
 import mlflow
 import numpy as np

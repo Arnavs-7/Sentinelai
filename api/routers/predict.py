@@ -12,6 +12,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from api.database import Alert, Prediction, SensorReading, get_db
+from api.security import verify_api_key
 from api.schemas.request import (
     BatchPredictRequest,
     PredictAnomalyRequest,
@@ -28,7 +29,13 @@ from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-router = APIRouter(prefix="/api/v1/predict", tags=["predict"])
+# Every prediction endpoint is gated by the X-API-Key dependency. The
+# check is a no-op when SENTINEL_API_KEY is unset (see api.security).
+router = APIRouter(
+    prefix="/api/v1/predict",
+    tags=["predict"],
+    dependencies=[Depends(verify_api_key)],
+)
 
 _HISTORY_LIMIT = 100
 

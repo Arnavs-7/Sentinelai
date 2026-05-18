@@ -1,6 +1,6 @@
 """LSTM and variational LSTM autoencoders for sensor anomaly detection."""
 
-from typing import Dict, Tuple
+from typing import Tuple
 
 import numpy as np
 import torch

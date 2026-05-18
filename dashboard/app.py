@@ -92,7 +92,7 @@ _HERO = f"""
         surfaces which sensors are driving each alert.
     </p>
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;">
-        {"".join(_stat_tile(v, l, c) for v, l, c in _STAT_TILES)}
+        {"".join(_stat_tile(v, lbl, c) for v, lbl, c in _STAT_TILES)}
     </div>
   </div>
 </div>

@@ -32,6 +32,12 @@ data/processed/*
 logs/
 reports/
 
+# Test / coverage artifacts
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+
 # MLflow
 mlruns/
 

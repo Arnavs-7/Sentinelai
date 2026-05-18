@@ -1,0 +1,25 @@
+# Tooling configuration for SentinelAI: ruff, pytest and coverage.
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+extend-exclude = ["notebooks", "mlruns", "__pycache__"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+
+[tool.ruff.lint.per-file-ignores]
+# Streamlit requires st.set_page_config() to run before any other import,
+# so the landing page legitimately places imports below module-level code.
+"dashboard/app.py" = ["E402"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.coverage.run]
+source = ["api", "src"]
+omit = ["*/__pycache__/*", "tests/*", "*/notebooks/*"]
+
+[tool.coverage.report]
+show_missing = true
