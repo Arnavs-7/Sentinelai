@@ -16,6 +16,9 @@ select = ["E", "F", "W"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+# Prepend the repo root to sys.path so api/, src/ and monitoring/ import
+# cleanly under bare `pytest` (e.g. in CI, where PYTHONPATH is unset).
+pythonpath = ["."]
 
 [tool.coverage.run]
 source = ["api", "src"]
