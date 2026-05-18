@@ -18,6 +18,8 @@ _NAV_PAGES = [
     ("pages/3_Predictions.py", "RUL Predictions", "🔮"),
     ("pages/4_Model_Performance.py", "Model Performance", "📊"),
     ("pages/5_Upload_Data.py", "Upload Data", "📤"),
+    ("pages/6_Data_Health.py", "Data Health", "🩺"),
+    ("pages/7_Live_Monitor.py", "Live Monitor", "📡"),
 ]
 
 

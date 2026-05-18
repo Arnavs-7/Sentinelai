@@ -16,6 +16,13 @@ from dashboard.utils.api_client import SentinelAPIClient
 _WINDOW = 30
 _N_SENSORS = 14
 
+# Maintenance guidance shown on the PDF report, keyed by risk level.
+_RECOMMENDED_ACTION = {
+    "CRITICAL": "Schedule immediate inspection; ground the engine until serviced.",
+    "WARNING": "Plan maintenance within the next 30 operating cycles.",
+    "HEALTHY": "Continue routine monitoring; no action required.",
+}
+
 
 def _pdf_report(machine_id: str, result: Dict[str, Any]) -> bytes:
     """Render a one-page PDF prediction report.
@@ -53,6 +60,10 @@ def _pdf_report(machine_id: str, result: Dict[str, Any]) -> bytes:
         lines.append("")
         lines.append("Explanation:")
         lines.append(str(explanation["summary_text"]))
+    risk = str(result.get("risk_level", "HEALTHY")).upper()
+    lines.append("")
+    lines.append("Recommended action:")
+    lines.append(_RECOMMENDED_ACTION.get(risk, _RECOMMENDED_ACTION["HEALTHY"]))
     y = 680
     for line in lines:
         pdf.drawString(72, y, line[:95])
