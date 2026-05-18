@@ -1,5 +1,6 @@
 """Tests for the SentinelAI FastAPI service endpoints."""
 
+import io
 from datetime import datetime
 from typing import Any, Dict, Iterator, List
 
@@ -137,3 +138,103 @@ def test_prediction_history(client: TestClient) -> None:
     response = client.get("/api/v1/predict/history/test-machine")
     assert response.status_code == 200
     assert isinstance(response.json()["history"], list)
+
+
+def test_predict_batch(client: TestClient) -> None:
+    """A JSON batch request returns one response per machine."""
+    response = client.post(
+        "/api/v1/predict/batch",
+        json={
+            "machines": [
+                {"machine_id": "engine-1", "sensor_readings": _valid_readings()},
+                {"machine_id": "engine-2", "sensor_readings": _valid_readings()},
+            ]
+        },
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert len(body) == 2
+    assert all(isinstance(item["predicted_rul"], float) for item in body)
+
+
+def _sample_csv() -> bytes:
+    """Build a two-engine sensor CSV in the C-MAPSS column layout.
+
+    Returns:
+        UTF-8 encoded CSV bytes ready for a multipart upload.
+    """
+    header = "unit_id,cycle," + ",".join(f"sensor_{i}" for i in range(1, 15))
+    lines = [header]
+    for unit in (1, 2):
+        for cycle in range(1, 36):
+            sensors = ",".join(str(float(s)) for s in range(14))
+            lines.append(f"{unit},{cycle},{sensors}")
+    return ("\n".join(lines)).encode("utf-8")
+
+
+def test_predict_batch_csv(client: TestClient) -> None:
+    """A CSV upload returns per-engine predictions and a fleet summary."""
+    response = client.post(
+        "/api/v1/predict/batch/csv",
+        files={"file": ("fleet.csv", io.BytesIO(_sample_csv()), "text/csv")},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["count"] == 2
+    assert len(body["predictions"]) == 2
+    assert body["summary"]["n_engines"] == 2
+    assert "mean_rul" in body["summary"]
+
+
+def test_predict_batch_csv_missing_sensors(client: TestClient) -> None:
+    """A CSV without sensor columns is rejected with a 422."""
+    csv_bytes = b"unit_id,cycle\n1,1\n1,2\n"
+    response = client.post(
+        "/api/v1/predict/batch/csv",
+        files={"file": ("bad.csv", io.BytesIO(csv_bytes), "text/csv")},
+    )
+    assert response.status_code == 422
+
+
+def test_api_key_rejects_missing(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """With auth enabled, a request without X-API-Key is rejected with 401."""
+    monkeypatch.setenv("SENTINEL_API_KEY", "top-secret")
+    response = client.post(
+        "/api/v1/predict/rul",
+        json={"machine_id": "m", "sensor_readings": _valid_readings()},
+    )
+    assert response.status_code == 401
+
+
+def test_api_key_rejects_wrong(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """With auth enabled, a wrong X-API-Key is rejected with 401."""
+    monkeypatch.setenv("SENTINEL_API_KEY", "top-secret")
+    response = client.post(
+        "/api/v1/predict/rul",
+        json={"machine_id": "m", "sensor_readings": _valid_readings()},
+        headers={"X-API-Key": "wrong-key"},
+    )
+    assert response.status_code == 401
+
+
+def test_api_key_accepts_valid(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """With auth enabled, the correct X-API-Key is accepted with 200."""
+    monkeypatch.setenv("SENTINEL_API_KEY", "top-secret")
+    response = client.post(
+        "/api/v1/predict/rul",
+        json={"machine_id": "m", "sensor_readings": _valid_readings()},
+        headers={"X-API-Key": "top-secret"},
+    )
+    assert response.status_code == 200
+
+
+def test_request_id_header(client: TestClient) -> None:
+    """Every response carries an X-Request-ID correlation header."""
+    response = client.get("/health")
+    assert response.headers.get("X-Request-ID")

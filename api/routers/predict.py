@@ -1,14 +1,16 @@
 """Prediction endpoints: RUL, anomaly detection, batch and history."""
 
 import asyncio
+import io
 import json
 import time
 from datetime import datetime
 from typing import Any, Dict, List
 
 import numpy as np
+import pandas as pd
 import torch
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from sqlalchemy.orm import Session
 
 from api.database import Alert, Prediction, SensorReading, get_db
@@ -38,6 +40,8 @@ router = APIRouter(
 )
 
 _HISTORY_LIMIT = 100
+_DEFAULT_WINDOW = 30
+_ENGINE_ID_COLUMNS = ("unit_id", "engine_id", "machine_id", "id")
 
 
 def _get_predictor(request: Request) -> Any:
@@ -368,3 +372,116 @@ def prediction_history(
         "predict/history machine=%s n=%d", machine_id, len(history)
     )
     return {"machine_id": machine_id, "count": len(history), "history": history}
+
+
+def _summarize(predictions: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Aggregate per-engine predictions into a fleet summary.
+
+    Args:
+        predictions: Per-engine prediction dicts with ``predicted_rul``
+            and ``risk_level`` keys.
+
+    Returns:
+        A summary dict with engine counts per risk level and the mean
+        predicted RUL across the batch.
+    """
+    levels = [p["risk_level"] for p in predictions]
+    ruls = [p["predicted_rul"] for p in predictions]
+    return {
+        "n_engines": len(predictions),
+        "healthy": levels.count("HEALTHY"),
+        "warning": levels.count("WARNING"),
+        "critical": levels.count("CRITICAL"),
+        "mean_rul": round(float(np.mean(ruls)), 2) if ruls else 0.0,
+        "min_rul": round(float(np.min(ruls)), 2) if ruls else 0.0,
+    }
+
+
+@router.post("/batch/csv")
+async def predict_batch_csv(
+    request: Request,
+    window_size: int = _DEFAULT_WINDOW,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+) -> Dict[str, Any]:
+    """Predict RUL for every engine in an uploaded sensor-telemetry CSV.
+
+    The CSV must carry an engine identifier column (one of ``unit_id``,
+    ``engine_id``, ``machine_id`` or ``id``) and one or more ``sensor_*``
+    columns. Rows are grouped per engine, ordered by ``cycle`` when that
+    column is present, and the trailing ``window_size`` cycles are scored.
+
+    Args:
+        request: The incoming request carrying the predictor.
+        window_size: Trailing cycle count fed to the model per engine.
+        file: The uploaded CSV file.
+        db: Active database session.
+
+    Returns:
+        A dict with the source filename, the per-engine predictions and a
+        fleet-level summary suitable for a downloadable report.
+
+    Raises:
+        HTTPException: On an unreadable file or missing required columns.
+    """
+    start = time.perf_counter()
+    raw = await file.read()
+    try:
+        frame = pd.read_csv(io.BytesIO(raw))
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(
+            status_code=422, detail=f"Could not parse CSV: {exc}"
+        ) from exc
+
+    id_column = next(
+        (c for c in _ENGINE_ID_COLUMNS if c in frame.columns), None
+    )
+    if id_column is None:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "CSV must contain an engine identifier column "
+                f"(one of {', '.join(_ENGINE_ID_COLUMNS)})."
+            ),
+        )
+    sensor_columns = sorted(
+        c for c in frame.columns if str(c).startswith("sensor_")
+    )
+    if not sensor_columns:
+        raise HTTPException(
+            status_code=422, detail="CSV must contain sensor_* columns."
+        )
+
+    predictor = _get_predictor(request)
+    predictions: List[Dict[str, Any]] = []
+    for engine_id, group in frame.groupby(id_column):
+        ordered = (
+            group.sort_values("cycle") if "cycle" in group.columns else group
+        )
+        readings = ordered[sensor_columns].tail(window_size).values.tolist()
+        result = await asyncio.to_thread(
+            predictor.predict_single, str(engine_id), readings
+        )
+        _persist_prediction(db, str(engine_id), result)
+        predictions.append(
+            {
+                "engine_id": str(engine_id),
+                "predicted_rul": round(float(result["predicted_rul"]), 2),
+                "risk_level": result["risk_level"],
+                "risk_score": round(float(result["risk_score"]), 2),
+            }
+        )
+
+    elapsed = (time.perf_counter() - start) * 1000.0
+    logger.info(
+        "predict/batch/csv file=%s engines=%d %.1fms",
+        file.filename,
+        len(predictions),
+        elapsed,
+    )
+    return {
+        "filename": file.filename,
+        "count": len(predictions),
+        "predictions": predictions,
+        "summary": _summarize(predictions),
+    }
