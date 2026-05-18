@@ -9,6 +9,9 @@
 
 # SentinelAI: Aviation Turbofan Engine Predictive Maintenance Platform
 
+[![CI](https://github.com/Arnavs-7/Sentinelai/actions/workflows/ci.yml/badge.svg)](https://github.com/Arnavs-7/Sentinelai/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/coverage-53%25-yellow.svg)](#testing)
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen.svg)](https://sentinelai-hfzx9bnwh6kzsuwkottn8v.streamlit.app)
 [![Python 3.11](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](#license)
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
@@ -52,30 +55,27 @@ through a REST API and an interactive dashboard so maintenance can be scheduled
 
 ## Architecture
 
-```
-  ┌────────────┐   ┌───────────────┐   ┌──────────────────────┐
-  │ Raw Sensors│ → │ Data Pipeline │ → │ Feature Engineering  │
-  └────────────┘   └───────────────┘   └──────────────────────┘
-                                                  │
-                                                  ▼
-        ┌──────────────────────────────────────────────────┐
-        │   LSTM  │   TCN  │ Transformer │ XGBoost │   RF    │
-        └──────────────────────────────────────────────────┘
-                                                  │
-                                                  ▼
-                                          ┌───────────────┐
-                                          │   Ensemble    │
-                                          └───────────────┘
-                                                  │
-                                                  ▼
-                                          ┌───────────────┐
-                                          │   FastAPI     │
-                                          └───────────────┘
-                                                  │
-                                                  ▼
-                                          ┌───────────────────┐
-                                          │ Streamlit Dashboard│
-                                          └───────────────────┘
+```mermaid
+flowchart TD
+    A[Raw Sensors<br/>NASA C-MAPSS] --> B[Data Pipeline<br/>load · clean · window]
+    B --> C[Feature Engineering]
+    C --> D{Model Suite}
+    D --> M1[LSTM + Attention]
+    D --> M2[TCN]
+    D --> M3[Transformer]
+    D --> M4[XGBoost]
+    D --> M5[Random Forest]
+    M1 --> E[Ensemble Layer]
+    M2 --> E
+    M3 --> E
+    M4 --> E
+    M5 --> E
+    E --> F[Inference<br/>RUL · SHAP · drift]
+    F --> G[FastAPI Service<br/>X-API-Key · request tracing]
+    G --> H[Streamlit Dashboard<br/>fleet · alerts · data health]
+    F --> I[MLflow Tracking]
+    G --> J[(SQLite Store)]
+    K[GitHub Actions CI<br/>ruff · pytest] -.gates.-> G
 ```
 
 ---
@@ -84,29 +84,40 @@ through a REST API and an interactive dashboard so maintenance can be scheduled
 
 - ✅ **RUL prediction** — forecast remaining useful life per machine
 - ✅ **Anomaly detection** — autoencoder-based reconstruction scoring
-- ✅ **Fault classification** — categorize degradation into health states
+- ✅ **Batch scoring** — JSON batch and CSV-upload prediction endpoints
 - ✅ **SHAP explainability** — per-prediction feature attributions
 - ✅ **Drift detection** — KS test, PSI, and concept-drift monitoring
-- ✅ **REST API** — production FastAPI service with OpenAPI docs
-- ✅ **Interactive dashboard** — Streamlit fleet monitoring UI
+- ✅ **REST API** — FastAPI service with OpenAPI docs and X-API-Key auth
+- ✅ **Request tracing** — per-request UUID logged and returned as a header
+- ✅ **Interactive dashboard** — Streamlit fleet, data health and live monitor
+- ✅ **Live alerting** — real-time critical-RUL banner with optional Slack hook
 - ✅ **ONNX export** — portable, accelerated inference artifacts
 - ✅ **MLflow tracking** — experiment logging and model registry
+- ✅ **CI/CD** — GitHub Actions pipeline (ruff lint + pytest) gating `main`
 - ✅ **Docker support** — one-command multi-service deployment
 
 ---
 
 ## Quick Start
 
+**One command** — the whole stack (API + dashboard + MLflow) via Docker:
+
 ```bash
-git clone https://github.com/your-org/sentinel-ai.git && cd sentinel-ai
-pip install -r requirements.txt
-python scripts/generate_demo_data.py
-uvicorn api.main:app --reload
-streamlit run dashboard/app.py
+git clone https://github.com/Arnavs-7/Sentinelai.git && cd Sentinelai && docker compose up --build
+```
+
+**Or run it locally** without Docker:
+
+```bash
+git clone https://github.com/Arnavs-7/Sentinelai.git && cd Sentinelai
+pip install -r requirements-api.txt        # full API + ML stack
+uvicorn api.main:app --reload              # API — demo data auto-seeds on startup
+streamlit run dashboard/app.py             # dashboard, in a second terminal
 ```
 
 The API will be available at `http://localhost:8000` (docs at `/docs`) and the
-dashboard at `http://localhost:8501`.
+dashboard at `http://localhost:8501`. A twelve-engine demo fleet is seeded
+automatically on the first API startup, so every page works immediately.
 
 ---
 
@@ -125,8 +136,8 @@ dashboard at `http://localhost:8501`.
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-org/sentinel-ai.git
-cd sentinel-ai
+git clone https://github.com/Arnavs-7/Sentinelai.git
+cd Sentinelai
 
 # 2. Create and activate a virtual environment
 python -m venv .venv
@@ -230,6 +241,34 @@ saved as `models_saved/production_model.pkl`.
 
 The service exposes interactive OpenAPI docs at `http://localhost:8000/docs`.
 
+### Endpoint Reference
+
+| Method | Endpoint | Payload | Response |
+|--------|----------|---------|----------|
+| `GET`  | `/health` | — | Liveness status, version, `models_loaded` flag |
+| `GET`  | `/api/v1/health/detailed` | — | Per-component (API, DB, models) health report |
+| `POST` | `/api/v1/predict/rul` 🔑 | `{machine_id, sensor_readings[][]}` | Predicted RUL, confidence interval, risk, SHAP |
+| `POST` | `/api/v1/predict/anomaly` 🔑 | `{machine_id, sensor_readings[][]}` | Anomaly flag, score, per-sensor reconstruction error |
+| `POST` | `/api/v1/predict/batch` 🔑 | `{machines: [PredictRULRequest]}` | List of RUL prediction responses |
+| `POST` | `/api/v1/predict/batch/csv` 🔑 | `multipart/form-data` CSV upload | Per-engine RUL predictions + fleet summary |
+| `GET`  | `/api/v1/predict/history/{machine_id}` 🔑 | — | Recent predictions with per-day RUL trend |
+| `GET`  | `/api/v1/machines` | — | All registered machines with latest prediction |
+| `POST` | `/api/v1/machines` | `{name, type, location, install_date}` | Created machine (HTTP 201) |
+| `GET`  | `/api/v1/machines/{id}` | — | A single machine |
+| `PUT`  | `/api/v1/machines/{id}` | Partial machine fields | Updated machine |
+| `DELETE` | `/api/v1/machines/{id}` | — | Deletion confirmation |
+| `GET`  | `/api/v1/machines/{id}/dashboard` | — | Aggregated machine dashboard bundle |
+| `GET`  | `/api/v1/analytics/fleet-health` | — | Fleet counts: total / healthy / warning / critical |
+| `GET`  | `/api/v1/analytics/rul-trend/{machine_id}` | — | Daily RUL trend series |
+| `GET`  | `/api/v1/analytics/model-performance` | — | Per-model evaluation metrics |
+| `GET`  | `/api/v1/analytics/alerts` | — | Recent alerts with a severity breakdown |
+
+🔑 **Authentication** — endpoints under `/api/v1/predict` require an
+`X-API-Key` header **when** the `SENTINEL_API_KEY` environment variable is set
+on the server. Leave it unset (the default) to disable auth for local and demo
+use. Missing or invalid keys return HTTP 401. Every response carries an
+`X-Request-ID` header for log correlation.
+
 ### Health check
 
 ```bash
@@ -298,13 +337,67 @@ Benchmark results on the C-MAPSS FD001 test set (RUL clipped at 125):
 
 ---
 
+## Testing
+
+The suite runs on every push and pull request via the GitHub Actions
+[CI pipeline](.github/workflows/ci.yml) — `ruff` lint followed by `pytest`
+with coverage.
+
+```bash
+# Lint
+ruff check api src dashboard tests
+
+# Run the full test suite
+pytest -p no:warnings
+
+# Run with a coverage report
+pytest -p no:warnings --cov=api --cov=src --cov-report=term-missing
+```
+
+Current line coverage is **~53%**, concentrated on the API service and
+inference paths; the heavier training and data-pipeline modules are exercised
+by integration tests that require the raw C-MAPSS dataset.
+
+---
+
+## Experiment Tracking
+
+Model training logs parameters, metrics and artifacts to **MLflow**. To browse
+runs locally:
+
+```bash
+mlflow ui --backend-store-uri ./mlruns
+```
+
+Then open `http://localhost:5000`. The Docker stack also starts an MLflow
+server on port `5000` automatically.
+
+---
+
+## Monitoring
+
+Generate a data and concept drift report against the model's reference
+distribution:
+
+```bash
+python -m monitoring.drift_report
+```
+
+This writes `reports/drift_report.json` using Kolmogorov-Smirnov, Population
+Stability Index and an ADWIN-style concept-drift detector. The same report
+powers the dashboard's **Data Health** page.
+
+---
+
 ## Project Structure
 
 ```
 sentinel-ai/
+├── .github/workflows/ci.yml     # GitHub Actions lint + test pipeline
 ├── api/                         # FastAPI prediction service
 │   ├── database.py              # SQLAlchemy ORM models & session
-│   ├── main.py                  # Application entrypoint
+│   ├── main.py                  # Application entrypoint (request tracing)
+│   ├── security.py              # X-API-Key authentication dependency
 │   ├── routers/                 # Route handlers
 │   │   ├── analytics.py
 │   │   ├── health.py
@@ -322,11 +415,15 @@ sentinel-ai/
 │   ├── pages/                   # Multi-page dashboard views
 │   │   ├── 1_Fleet_Overview.py
 │   │   ├── 2_Machine_Detail.py
-│   │   ├── 3_Predictions.py
+│   │   ├── 3_Predictions.py      # RUL inference + PDF report
 │   │   ├── 4_Model_Performance.py
-│   │   └── 5_Upload_Data.py
+│   │   ├── 5_Upload_Data.py
+│   │   ├── 6_Data_Health.py      # drift monitoring
+│   │   └── 7_Live_Monitor.py     # real-time alert simulation
 │   └── utils/
 │       └── api_client.py
+├── monitoring/                  # Drift reporting
+│   └── drift_report.py
 ├── scripts/                     # Operational scripts
 │   ├── download_data.py
 │   ├── generate_demo_data.py
@@ -365,12 +462,17 @@ sentinel-ai/
 │   ├── test_api.py
 │   ├── test_data_pipeline.py
 │   ├── test_inference.py
-│   └── test_models.py
+│   ├── test_models.py
+│   └── test_monitoring.py
 ├── Dockerfile                   # API service image
 ├── Dockerfile.dashboard         # Dashboard image
 ├── docker-compose.yml           # Multi-service orchestration
-├── requirements.txt
+├── pyproject.toml               # ruff / pytest / coverage config
+├── requirements.txt             # Dashboard (slim) dependencies
+├── requirements-api.txt         # Full API + ML dependencies
+├── render.yaml                  # Render deployment blueprint
 ├── setup.py
+├── CHANGELOG.md
 ├── .env.example
 └── README.md
 ```
